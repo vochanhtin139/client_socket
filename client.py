@@ -1,9 +1,20 @@
 # from calendar import leapdays
 from tkinter.ttk import *
 from tkinter import *
+from socket import *
 
-from setuptools import Command
+# *********************************** 
+# *         Initialize SOCKET       *
+# ***********************************
 
+sck = socket(AF_INET, SOCK_STREAM)
+sck.connect(("127.0.0.1", 9000))
+
+# *********************************** 
+# *          Initialize GUI         *
+# ***********************************
+
+# Initialize height and weight of windows
 w = Tk()
 
 w.title("")
@@ -23,6 +34,7 @@ s.theme_use('clam')
 s.configure("red.Horizontal.TProgressbar", foreground='red', background="#4f4f4f")
 progress = Progressbar(w, style="red.Horizontal.TProgressbar", orient=HORIZONTAL, length=1000, mode='determinate')
 
+# New window after splash screen
 def new_win():
     q = Tk()
     q.title("")
@@ -34,6 +46,7 @@ def new_win():
 
     q.mainloop()
 
+# Config the bar at splash screen
 def bar(event):
     l4 = Label(w, text='Loading...', fg="white", bg=a, anchor=S)
     lst4 = ('Calibri (Body)', 10)
@@ -54,6 +67,7 @@ def bar(event):
 
 progress.pack(side=BOTTOM)
 
+# Adding widget at splash screen
 a = '#249794'
 Frame(w, width=857, height=482, bg = a).place(x=0, y=0)
 
