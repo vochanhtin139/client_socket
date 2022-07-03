@@ -44,6 +44,10 @@ def new_win():
     l1.config(font=l)
     l1.pack(expand=TRUE)
 
+    # tmp = inputPort.get()
+    print(value.get())
+    sck.sendall(value.get().encode())
+
     q.mainloop()
 
 # Config the bar at splash screen
@@ -91,13 +95,12 @@ l3.pack(fill=BOTH, padx=100, pady=10)
 l4 = Label(w, text="Enter table ID:", bg=a, fg="white")
 l4.pack(pady=(10, 0))
 
-inputPort = Entry(w, bg="white", justify=CENTER)
+value = StringVar()
+inputPort = Entry(w, bg="white", justify=CENTER, textvariable=value)
 inputPort.configure(font=("Tahoma", 20))
-inputPort.bind('<Return>', bar)
+# inputPort.bind('<Return>', bar)
 inputPort.pack()
 
-b1 = Button(w, width=20, height=2, text="Get started", command=bar, border=1, fg=a, bg="white", anchor=CENTER)
-# b1.place(x=200, y=300)
+b1 = Button(w, width=20, height=2, text="Get started", command=lambda: bar(), border=1, fg=a, bg="white", anchor=CENTER)
 b1.pack(pady=50)
-
 w.mainloop()
