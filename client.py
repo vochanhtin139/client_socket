@@ -2,6 +2,8 @@
 from tkinter.ttk import *
 from tkinter import *
 
+from setuptools import Command
+
 w = Tk()
 
 w.title("")
@@ -32,7 +34,7 @@ def new_win():
 
     q.mainloop()
 
-def bar():
+def bar(event):
     l4 = Label(w, text='Loading...', fg="white", bg=a, anchor=S)
     lst4 = ('Calibri (Body)', 10)
     l4.config(font=lst4)
@@ -71,6 +73,14 @@ l3 = Label(w, text="Vo Chanh Tin\nPhan Nhu Quynh\nNguyen Van Dang Huynh", foregr
 lst3 = ('Tahoma', 14)
 l3.config(font=lst3)
 l3.pack(fill=BOTH, padx=100, pady=10)
+
+l4 = Label(w, text="Enter table ID:", bg=a, fg="white")
+l4.pack(pady=(10, 0))
+
+inputPort = Entry(w, bg="white", justify=CENTER)
+inputPort.configure(font=("Tahoma", 20))
+inputPort.bind('<Return>', bar)
+inputPort.pack()
 
 b1 = Button(w, width=20, height=2, text="Get started", command=bar, border=1, fg=a, bg="white", anchor=CENTER)
 # b1.place(x=200, y=300)
