@@ -51,7 +51,7 @@ def new_win():
     q.mainloop()
 
 # Config the bar at splash screen
-def bar(event):
+def bar():
     l4 = Label(w, text='Loading...', fg="white", bg=a, anchor=S)
     lst4 = ('Calibri (Body)', 10)
     l4.config(font=lst4)
