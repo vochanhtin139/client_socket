@@ -1,0 +1,15 @@
+[
+    {
+        "id": "1",
+        "name": "Súp nghêu",
+        "description": "Béo ngậy thơm ngon vô cùng",
+        "price": "78000",
+        "image": "ksdhfkshfkg"
+    },
+    {
+        "id": "2",
+        "name": "Sữa chua",
+        "description": "Sữa chua nhà làm ngon như nhà làm",
+        "price": "15000"
+    }
+]

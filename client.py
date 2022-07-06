@@ -1,7 +1,13 @@
 # from calendar import leapdays
+from ast import Global
+from cmath import exp
 from tkinter.ttk import *
 from tkinter import *
 from socket import *
+import json 
+from PIL import Image, ImageTk 
+import sqlite3
+from io import BytesIO
 
 # *********************************** 
 # *         Initialize SOCKET       *
@@ -34,19 +40,103 @@ s.theme_use('clam')
 s.configure("red.Horizontal.TProgressbar", foreground='red', background="#4f4f4f")
 progress = Progressbar(w, style="red.Horizontal.TProgressbar", orient=HORIZONTAL, length=1000, mode='determinate')
 
+def decreaseNum(num, numOfFood):
+    numOfFood = numOfFood - 1
+    num.config(text=str(numOfFood))
+
+def increaseNum(num, numOfFood):
+    numOfFood = numOfFood + 1
+    num.config(text=str(numOfFood))
+
+def add_item(q, i, item, pic):
+    frame = Frame(q, highlightbackground="grey", bg = a, highlightthickness=1, width = 200, height = 200, bd=0)
+    # frame.pack(side=LEFT, anchor=NE, expand=TRUE)
+    frame.pack(side=LEFT)
+
+    img = Image.open(BytesIO(pic))
+    img.thumbnail((200, 200), Image.ANTIALIAS)
+    imgTk = ImageTk.PhotoImage(img)
+
+    lb = Label(frame, image=imgTk, width=200, height=200, bg=a)
+    lb.pack(fill=BOTH)
+    frame.image = imgTk
+
+    des = item['food_name'] + '\n' + item['description'] + '\n' + str(item['price'])
+    name = Label(frame, text=des, bg=a, fg='white')
+    name.pack(fill=BOTH)     
+
+    # Decrease number
+    dec[i] = Button(frame, text='-', bd=0, fg=a, bg='white', font=('Calibri (Body)', 18, 'bold'), pady=5, padx=5, command=lambda: decreaseNum(num[i], numOfFood[i]))
+    dec[i].pack(side=LEFT)
+
+    # Current number
+    num[i] = Label(frame, text=str(numOfFood), bg='white', fg=a, font=('Calibri (Body)', 18), padx=30, pady=5)
+    num[i].pack(side=LEFT, expand=TRUE, fill=BOTH)
+
+    # Increase number
+    inc[i] = Button(frame, text='+', bd=0, fg=a, bg='white', font=('Calibri (Body)', 18, 'bold'), pady=5, padx=5, command=lambda: increaseNum(num[i], numOfFood[i]))
+    inc[i].pack(side=LEFT)
+
+# Add food to menu
+def add_food(q):
+    h1 = Label(q, text='CLIENT MENU', fg='green', bg=a, font=('Calibri (Body)', 30, 'bold'))
+    h1.pack(fill=BOTH)
+
+    jData = sck.recv(100000)
+    # print(jData)
+    jArr = json.loads(jData.decode())
+    # print(jArr)
+
+    sendStr = "Received"
+    sck.send(sendStr.encode())
+
+    global numOfFood
+    global dec
+    global num
+    global inc
+    dec = []
+    num = []
+    inc = []
+    numOfFood = []
+    for i in range(len(jArr)):
+        numOfFood.append(0)
+        dec.append(Label())
+        num.append(Label())
+        inc.append(Label())
+
+
+    img = []
+    # if (jArr[0]['type'] == 'food_menu'):
+    for i in range(len(jArr) - 1):
+        imgRecv = sck.recv(100000)
+        img.append(imgRecv)
+        tfood = "food" + str(i + 1)
+        if i < 2:
+            add_item(q, i + 1, jArr[i+1][tfood], imgRecv)
+
+    # imgTmp = Image.open(BytesIO(img[5]))
+    # imgTk = ImageTk.PhotoImage(imgTmp)
+    # lb = Label(q, image=imgTk)
+    # lb.pack() 
+    # q.image = imgTk
+
 # New window after splash screen
 def new_win():
     q = Tk()
     q.title("")
     q.geometry("854x500")
-    l1 = Label(q, text='ADD TEXT HERE ', fg='grey', bg=None)
-    l = ('Calibri (Body)', 24, 'bold')
-    l1.config(font=l)
-    l1.pack(expand=TRUE)
+    Frame(q, width=857, height=482, bg=a).place(x=0, y=0)
+
+    # l1 = Label(q, text='ADD TEXT HERE ', fg='grey', bg=None)
+    # l = ('Calibri (Body)', 24, 'bold')
+    # l1.config(font=l)
+    # l1.pack(expand=TRUE)
 
     # tmp = inputPort.get()
-    print(value.get())
-    sck.sendall(value.get().encode())
+    # print(value.get())
+    # sck.sendall(value.get().encode())
+
+    add_food(q)
 
     q.mainloop()
 
