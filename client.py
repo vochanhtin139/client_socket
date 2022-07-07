@@ -1,7 +1,7 @@
 # from calendar import leapdays
 from ast import Global
 from cmath import exp
-from curses import newwin
+from email import message
 from tkinter.ttk import *
 from tkinter import *
 from socket import *
@@ -139,12 +139,15 @@ def add_food(q):
     img = []
     for i in range(len(jArr)-1):
     # for i in range(7):
-        imgRecv = sck.recv(100000)
-        sendStr = "Received"
+        length = sck.recv(10000)
         sck.sendall(sendStr.encode())
+
+        imgRecv = sck.recv(int(length.decode()))
+        sck.sendall(sendStr.encode())
+
         img.append(imgRecv)
         tfood = "food" + str(i + 1)
-        add_item(qq, i + 1, jArr[i+1][tfood], imgRecv)
+        add_item(qq, i + 1, jArr[i + 1][tfood], imgRecv)
 
     # sck.recv(100000)
     # imgTmp = Image.open(BytesIO(img[10]))
