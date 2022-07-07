@@ -1,13 +1,17 @@
 # from calendar import leapdays
 from ast import Global
 from cmath import exp
+from curses import newwin
 from tkinter.ttk import *
 from tkinter import *
 from socket import *
-import json 
+import json
+from turtle import width 
 from PIL import Image, ImageTk 
 import sqlite3
 from io import BytesIO
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 # *********************************** 
 # *         Initialize SOCKET       *
@@ -40,18 +44,29 @@ s.theme_use('clam')
 s.configure("red.Horizontal.TProgressbar", foreground='red', background="#4f4f4f")
 progress = Progressbar(w, style="red.Horizontal.TProgressbar", orient=HORIZONTAL, length=1000, mode='determinate')
 
-def decreaseNum(num, numOfFood):
-    numOfFood = numOfFood - 1
-    num.config(text=str(numOfFood))
+def decreaseNum(i):
+    global numOfFood
+    global num
+    if numOfFood[i] == 0:
+        return
+    numOfFood[i] = numOfFood[i] - 1
+    num[i].config(text=str(numOfFood[i]))
 
-def increaseNum(num, numOfFood):
-    numOfFood = numOfFood + 1
-    num.config(text=str(numOfFood))
+def increaseNum(i):
+    global numOfFood
+    global num
+    numOfFood[i] = numOfFood[i] + 1
+    num[i].config(text=str(numOfFood[i]))
 
-def add_item(q, i, item, pic):
-    frame = Frame(q, highlightbackground="grey", bg = a, highlightthickness=1, width = 200, height = 200, bd=0)
-    # frame.pack(side=LEFT, anchor=NE, expand=TRUE)
-    frame.pack(side=LEFT)
+def add_item(qq, i, item, pic):
+    global numOfFood
+    global dec
+    global num
+    global inc
+
+    frame = Frame(qq, highlightbackground="grey", bg = a, highlightthickness=1, width = 200, height = 200, bd=0)
+    frame.pack(side=LEFT, anchor=NE, expand=TRUE, fill=BOTH)
+    # frame.grid(row=2, column=i)
 
     img = Image.open(BytesIO(pic))
     img.thumbnail((200, 200), Image.ANTIALIAS)
@@ -66,16 +81,22 @@ def add_item(q, i, item, pic):
     name.pack(fill=BOTH)     
 
     # Decrease number
-    dec[i] = Button(frame, text='-', bd=0, fg=a, bg='white', font=('Calibri (Body)', 18, 'bold'), pady=5, padx=5, command=lambda: decreaseNum(num[i], numOfFood[i]))
+    dec[i] = Button(frame, text='-', bd=0, fg=a, bg='white', font=('Calibri (Body)', 18, 'bold'), pady=5, padx=5, command=lambda: decreaseNum(i))
     dec[i].pack(side=LEFT)
 
     # Current number
-    num[i] = Label(frame, text=str(numOfFood), bg='white', fg=a, font=('Calibri (Body)', 18), padx=30, pady=5)
+    num[i] = Label(frame, text=str(numOfFood[i]), bg='white', fg=a, font=('Calibri (Body)', 18), padx=30, pady=5)
     num[i].pack(side=LEFT, expand=TRUE, fill=BOTH)
 
     # Increase number
-    inc[i] = Button(frame, text='+', bd=0, fg=a, bg='white', font=('Calibri (Body)', 18, 'bold'), pady=5, padx=5, command=lambda: increaseNum(num[i], numOfFood[i]))
+    inc[i] = Button(frame, text='+', bd=0, fg=a, bg='white', font=('Calibri (Body)', 18, 'bold'), pady=5, padx=5, command=lambda: increaseNum(i))
     inc[i].pack(side=LEFT)
+
+newWidth = 854
+dec = []
+num = []
+inc = []
+numOfFood = []
 
 # Add food to menu
 def add_food(q):
@@ -83,38 +104,50 @@ def add_food(q):
     h1.pack(fill=BOTH)
 
     jData = sck.recv(100000)
-    # print(jData)
     jArr = json.loads(jData.decode())
-    # print(jArr)
 
     sendStr = "Received"
-    sck.send(sendStr.encode())
-
-    global numOfFood
-    global dec
-    global num
-    global inc
-    dec = []
-    num = []
-    inc = []
-    numOfFood = []
+    sck.sendall(sendStr.encode())
+    
     for i in range(len(jArr)):
         numOfFood.append(0)
         dec.append(Label())
         num.append(Label())
         inc.append(Label())
 
+    # Create a canvas
+    canvas = Canvas(q)
+    canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+
+    # Add a scrollbar to the canvas
+    scr = Scrollbar(q, orient=HORIZONTAL, command=canvas.xview)
+    scr.pack(side=BOTTOM, fill=X)
+
+    # Configure the canvas
+    canvas.configure(xscrollcommand=scr.set)
+    canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+    # def _on_mouse_wheel(event):
+    #     canvas.xview_scroll(-1 * int((event.delta/120)), "units")
+    # canvas.bind_all("<MouseWheel>", _on_mouse_wheel)
+
+    # Create another frame inside the canvas
+    qq = Frame(canvas)
+
+    # Add that new frame to a window in the canvas
+    canvas.create_window((0,0), window=qq, anchor=NW)
 
     img = []
-    # if (jArr[0]['type'] == 'food_menu'):
-    for i in range(len(jArr) - 1):
+    for i in range(len(jArr)-1):
+    # for i in range(7):
         imgRecv = sck.recv(100000)
+        sendStr = "Received"
+        sck.sendall(sendStr.encode())
         img.append(imgRecv)
         tfood = "food" + str(i + 1)
-        if i < 2:
-            add_item(q, i + 1, jArr[i+1][tfood], imgRecv)
+        add_item(qq, i + 1, jArr[i+1][tfood], imgRecv)
 
-    # imgTmp = Image.open(BytesIO(img[5]))
+    # sck.recv(100000)
+    # imgTmp = Image.open(BytesIO(img[10]))
     # imgTk = ImageTk.PhotoImage(imgTmp)
     # lb = Label(q, image=imgTk)
     # lb.pack() 
@@ -124,13 +157,8 @@ def add_food(q):
 def new_win():
     q = Tk()
     q.title("")
-    q.geometry("854x500")
+    q.geometry("%dx%d+%d+%d" % (width_of_window, height_of_window, x_coordinate, y_coordinate))
     Frame(q, width=857, height=482, bg=a).place(x=0, y=0)
-
-    # l1 = Label(q, text='ADD TEXT HERE ', fg='grey', bg=None)
-    # l = ('Calibri (Body)', 24, 'bold')
-    # l1.config(font=l)
-    # l1.pack(expand=TRUE)
 
     # tmp = inputPort.get()
     # print(value.get())
