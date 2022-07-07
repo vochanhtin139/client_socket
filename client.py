@@ -64,7 +64,7 @@ def add_item(qq, i, item, pic):
     global num
     global inc
 
-    frame = Frame(qq, highlightbackground="grey", bg = a, highlightthickness=1, width = 200, height = 200, bd=0)
+    frame = Frame(qq, highlightbackground="grey", bg = a, highlightthickness=1, bd=0)
     frame.pack(side=LEFT, anchor=NE, expand=TRUE, fill=BOTH)
     # frame.grid(row=2, column=i)
 
@@ -89,7 +89,7 @@ def add_item(qq, i, item, pic):
         description = description + '...'
     else:
         description = item['description']
-    des = Label(frame, text=description, bg=a, fg='white', font=('Calibri (Body)', 15), anchor=N)
+    des = Label(frame, text=description, bg=a, fg='white', font=('Calibri (Body)', 13), anchor=N)
     des.pack(fill=BOTH) 
 
     price = Label(frame, text=str(item['price']) + 'đ', bg=a, fg='white', font=('Calibri (Body)', 15, 'bold'), anchor=N)
@@ -97,15 +97,15 @@ def add_item(qq, i, item, pic):
 
 
     # Decrease number
-    dec[i] = Button(frame, text='-', bd=2, fg=a, bg='white', relief=GROOVE, font=('Calibri (Body)', 18, 'bold'), pady=5, padx=8, command=lambda: decreaseNum(i))
+    dec[i] = Button(frame, text='-', bd=2, fg=a, bg='white', relief=GROOVE, font=('Calibri (Body)', 16, 'bold'), pady=5, padx=10, command=lambda: decreaseNum(i))
     dec[i].pack(side=LEFT)
 
     # Current number
-    num[i] = Label(frame, text=str(numOfFood[i]), bg='white', fg='black', font=('Calibri (Body)', 18), pady=13)
+    num[i] = Label(frame, text=str(numOfFood[i]), bg='white', fg='black', font=('Calibri (Body)', 16), pady=10)
     num[i].pack(side=LEFT, expand=TRUE, fill=X)
 
     # Increase number
-    inc[i] = Button(frame, text='+', bd=2, fg=a, bg='white', relief=GROOVE, font=('Calibri (Body)', 18, 'bold'), pady=5, padx=8, command=lambda: increaseNum(i))
+    inc[i] = Button(frame, text='+', bd=2, fg=a, bg='white', relief=GROOVE, font=('Calibri (Body)', 16, 'bold'), pady=5, padx=8, command=lambda: increaseNum(i))
     inc[i].pack(side=LEFT)
 
 dec = []
@@ -115,7 +115,7 @@ numOfFood = []
 
 # Add food to menu
 def add_food(q):
-    h1 = Label(q, text='Client Menu', fg='pink', bg=a, font=('Forte', 40), pady=15)
+    h1 = Label(q, text='Client Menu', fg='pink', bg=a, font=('Forte', 35), pady=12)
     h1.pack(fill=BOTH)
 
     jData = sck.recv(100000)
@@ -161,8 +161,7 @@ def add_food(q):
         tfood = "food" + str(i + 1)
         add_item(qq, i + 1, jArr[i + 1][tfood], imgRecv)
 
-    # empty = Frame(q, bg=a)
-    # empty.pack(fill=BOTH, expand=TRUE)
+    submit = Button(q, "Đặt món")
 
 # New window after splash screen
 def new_win():
