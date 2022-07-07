@@ -1,5 +1,7 @@
 # from calendar import leapdays
 from ast import Global
+from asyncio.windows_events import NULL
+from base64 import encode
 from cmath import exp
 from email import message
 from tkinter.ttk import *
@@ -12,6 +14,8 @@ import sqlite3
 from io import BytesIO
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+FORMAT = "utf-8"
 
 # *********************************** 
 # *         Initialize SOCKET       *
@@ -118,11 +122,13 @@ def add_food(q):
     h1 = Label(q, text='Client Menu', fg='pink', bg=a, font=('Forte', 35), pady=12)
     h1.pack(fill=BOTH)
 
-    jData = sck.recv(100000)
-    jArr = json.loads(jData.decode())
-
+    jData_length = sck.recv(1024).decode(FORMAT)
+    sck.sendall(jData_length.encode(FORMAT))
+    jData = sck.recv(int(jData_length)).decode(FORMAT)
+    sck.sendall(jData.encode(FORMAT))
+    jArr = json.loads(jData)
+    
     sendStr = "Received"
-    sck.sendall(sendStr.encode())
     
     for i in range(len(jArr)):
         numOfFood.append(0)
@@ -152,16 +158,16 @@ def add_food(q):
     img = []
     for i in range(len(jArr)-1):
     # for i in range(7):
-        length = sck.recv(10000)
-        sck.sendall(sendStr.encode())
-        imgRecv = sck.recv(int(length.decode()))
-        sck.sendall(sendStr.encode())
+        imgRecv_length = sck.recv(1024).decode(FORMAT)
+        sck.sendall(sendStr.encode(FORMAT))
+        imgRecv = sck.recv(int(imgRecv_length))
+        sck.sendall(sendStr.encode(FORMAT))
 
         img.append(imgRecv)
         tfood = "food" + str(i + 1)
         add_item(qq, i + 1, jArr[i + 1][tfood], imgRecv)
 
-    submit = Button(q, "Đặt món")
+    submit = Button(q, text="Đặt món")
 
 # New window after splash screen
 def new_win():
@@ -170,32 +176,35 @@ def new_win():
     q.geometry("%dx%d+%d+%d" % (width_of_window, height_of_window, x_coordinate, y_coordinate))
     Frame(q, width=857, height=482, bg=a).place(x=0, y=0)
 
-    # tmp = inputPort.get()
-    # print(value.get())
-    # sck.sendall(value.get().encode())
-
     add_food(q)
 
     q.mainloop()
 
 # Config the bar at splash screen
 def bar():
-    l4 = Label(w, text='Loading...', fg="white", bg=a, anchor=S)
-    lst4 = ('Calibri (Body)', 10)
-    l4.config(font=lst4)
-    # l4.place(x=18, y=210)
-    l4.pack(side=LEFT, pady=(50, 0))
+    tmp = inputPort.get()
+    print(value.get())
+    if value.get() != "":
+        l4 = Label(w, text='Loading...', fg="white", bg=a, anchor=S)
+        lst4 = ('Calibri (Body)', 10)
+        l4.config(font=lst4)
+        l4.pack(side=LEFT, pady=(50, 0))
 
-    import time
-    r = 0
-    for i in range(100):
-        progress['value'] = r
-        w.update_idletasks()
-        time.sleep(0.02)
-        r = r + 1
+        import time
+        r = 0
+        for i in range(100):
+            progress['value'] = r
+            w.update_idletasks()
+            time.sleep(0.02)
+            r = r + 1
 
-    w.destroy()
-    new_win()
+        sck.sendall(str(len(value.get())).encode(FORMAT))
+        sck.recv(1024)
+        sck.sendall(value.get().encode(FORMAT))
+        sck.recv(1024)
+    
+        w.destroy()
+        new_win()
 
 progress.pack(side=BOTTOM)
 
