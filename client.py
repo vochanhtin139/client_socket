@@ -76,23 +76,38 @@ def add_item(qq, i, item, pic):
     lb.pack(fill=BOTH)
     frame.image = imgTk
 
-    des = item['food_name'] + '\n' + item['description'] + '\n' + str(item['price'])
-    name = Label(frame, text=des, bg=a, fg='white')
-    name.pack(fill=BOTH)     
+    if len(item['food_name']) > 24:
+        food_name = item['food_name'][0:20]
+        food_name = food_name + '...'
+    else:
+        food_name = item['food_name']
+    name = Label(frame, text=food_name, bg=a, fg='white', font=('Calibri (Body)', 15, 'bold'), anchor=N)
+    name.pack(fill=BOTH) 
+
+    if len(item['description']) > 28:
+        description = item['description'][0:24]
+        description = description + '...'
+    else:
+        description = item['description']
+    des = Label(frame, text=description, bg=a, fg='white', font=('Calibri (Body)', 15), anchor=N)
+    des.pack(fill=BOTH) 
+
+    price = Label(frame, text=str(item['price']) + 'đ', bg=a, fg='white', font=('Calibri (Body)', 15, 'bold'), anchor=N)
+    price.pack(fill=BOTH) 
+
 
     # Decrease number
-    dec[i] = Button(frame, text='-', bd=0, fg=a, bg='white', font=('Calibri (Body)', 18, 'bold'), pady=5, padx=5, command=lambda: decreaseNum(i))
+    dec[i] = Button(frame, text='-', bd=2, fg=a, bg='white', relief=GROOVE, font=('Calibri (Body)', 18, 'bold'), pady=5, padx=8, command=lambda: decreaseNum(i))
     dec[i].pack(side=LEFT)
 
     # Current number
-    num[i] = Label(frame, text=str(numOfFood[i]), bg='white', fg=a, font=('Calibri (Body)', 18), padx=30, pady=5)
-    num[i].pack(side=LEFT, expand=TRUE, fill=BOTH)
+    num[i] = Label(frame, text=str(numOfFood[i]), bg='white', fg='black', font=('Calibri (Body)', 18), pady=13)
+    num[i].pack(side=LEFT, expand=TRUE, fill=X)
 
     # Increase number
-    inc[i] = Button(frame, text='+', bd=0, fg=a, bg='white', font=('Calibri (Body)', 18, 'bold'), pady=5, padx=5, command=lambda: increaseNum(i))
+    inc[i] = Button(frame, text='+', bd=2, fg=a, bg='white', relief=GROOVE, font=('Calibri (Body)', 18, 'bold'), pady=5, padx=8, command=lambda: increaseNum(i))
     inc[i].pack(side=LEFT)
 
-newWidth = 854
 dec = []
 num = []
 inc = []
@@ -100,7 +115,7 @@ numOfFood = []
 
 # Add food to menu
 def add_food(q):
-    h1 = Label(q, text='CLIENT MENU', fg='green', bg=a, font=('Calibri (Body)', 30, 'bold'))
+    h1 = Label(q, text='Client Menu', fg='pink', bg=a, font=('Forte', 40), pady=15)
     h1.pack(fill=BOTH)
 
     jData = sck.recv(100000)
@@ -116,19 +131,17 @@ def add_food(q):
         inc.append(Label())
 
     # Create a canvas
-    canvas = Canvas(q)
-    canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+    canvas = Canvas(q, bg=a)
+    canvas.pack(fill=BOTH, expand=TRUE)
 
     # Add a scrollbar to the canvas
-    scr = Scrollbar(q, orient=HORIZONTAL, command=canvas.xview)
-    scr.pack(side=BOTTOM, fill=X)
+    scr = Scrollbar(q, orient=HORIZONTAL, bg=a, command=canvas.xview)
+    scr.pack(side=BOTTOM, fill=BOTH)
 
     # Configure the canvas
     canvas.configure(xscrollcommand=scr.set)
     canvas.bind('<Configure>', lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-    # def _on_mouse_wheel(event):
-    #     canvas.xview_scroll(-1 * int((event.delta/120)), "units")
-    # canvas.bind_all("<MouseWheel>", _on_mouse_wheel)
+    
 
     # Create another frame inside the canvas
     qq = Frame(canvas)
@@ -141,7 +154,6 @@ def add_food(q):
     # for i in range(7):
         length = sck.recv(10000)
         sck.sendall(sendStr.encode())
-
         imgRecv = sck.recv(int(length.decode()))
         sck.sendall(sendStr.encode())
 
@@ -149,12 +161,8 @@ def add_food(q):
         tfood = "food" + str(i + 1)
         add_item(qq, i + 1, jArr[i + 1][tfood], imgRecv)
 
-    # sck.recv(100000)
-    # imgTmp = Image.open(BytesIO(img[10]))
-    # imgTk = ImageTk.PhotoImage(imgTmp)
-    # lb = Label(q, image=imgTk)
-    # lb.pack() 
-    # q.image = imgTk
+    # empty = Frame(q, bg=a)
+    # empty.pack(fill=BOTH, expand=TRUE)
 
 # New window after splash screen
 def new_win():
