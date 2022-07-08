@@ -130,6 +130,10 @@ def sendData(n, arr, STK, timeOrder):
             }
         }
         jArr.append(js)
+        
+    order = "Order Food"
+    sck.sendall(str(len(order)).encode().ljust(64))
+    sck.sendall(order.encode())
     
     sck.sendall(str(len(json.dumps(jArr))).encode().ljust(64))
     sck.sendall(json.dumps(jArr).encode())
