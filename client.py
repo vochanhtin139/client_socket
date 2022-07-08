@@ -1,6 +1,7 @@
 # from calendar import leapdays
 from ast import Global
 from cmath import exp
+from distutils.log import info
 from email import message
 from tkinter.ttk import *
 from tkinter import *
@@ -14,6 +15,7 @@ from PIL import ImageFile
 import time
 from datetime import datetime, timedelta
 import datetime
+import tkinter.messagebox as mbox
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 # *********************************** 
@@ -119,8 +121,8 @@ def orderFood(q, n, arr):
     # print ("The time is now: = %s:%s:%s" % (e.hour, e.minute, e.second))
     
     popup = Toplevel(q)
-    popup.geometry("500x600")
-    # popup.title("Đơn hàng của bạn")
+    popup.geometry("500x600+500+120")
+    popup.title("Đơn hàng của bạn")
 
     set = Treeview(popup)
     set.pack()
@@ -146,16 +148,21 @@ def orderFood(q, n, arr):
             set.insert(parent='', index='end', iid=i, text='', values=(arr[i + 1][tfood]['food_name'], str(numOfFood[i + 1]), str(arr[i+1][tfood]['price']), str(total)))
             sum = sum + total 
         
-    Label(popup, text="Tổng: ", font=('Calibri (Body)', 20, 'bold')).pack(side=LEFT, padx=50)
-    Label(popup, text=str(sum), font=('Calibri (Body)', 20, 'bold')).pack(side=RIGHT, padx=50)
+    sumFrame = Frame(popup, pady=50)
+    sumFrame.pack()
+    Label(sumFrame, text="Tổng: ", font=('Calibri (Body)', 18, 'bold')).pack(side=LEFT, padx=50)
+    Label(sumFrame, text=str(sum), font=('Calibri (Body)', 18, 'bold')).pack(side=RIGHT, padx=50)
 
-    var = IntVar()
-    Label(popup, text="Phương thức thanh toán:", font=('Calibri (Body)', 20, 'underline')).pack(side=BOTTOM, padx=50)
-    cash = Radiobutton(popup, text='Thanh toán tiền mặt', variable=var, value=0, command=payment)
+    paymentFrame = Frame(popup)
+    paymentFrame.pack()
+    choice = IntVar()
+    Label(paymentFrame, text="Phương thức thanh toán:", font=('Calibri (Body)', 16, 'underline')).pack()
+    cash = Radiobutton(paymentFrame, text='Thanh toán tiền mặt', font=('Calibri (Body)', 15), variable=choice, value=0)
     cash.pack()
-    card = Radiobutton(popup, text='Chuyển khoản ngân hàng', variable=var, value=1, command=payment)
+    card = Radiobutton(paymentFrame, text='Thanh toán bằng thẻ', font=('Calibri (Body)', 15), variable=choice, value=1)
     card.pack()
-    
+    Button(paymentFrame, text="Thanh toán", font=('Calibri (Body)', 16), relief=RAISED, command=lambda: payment(popup, choice.get())).pack(pady=20)
+        
     # for i in range(n):
     #     tfood = "food" + str(i + 1)
     #     total = numOfFood[i+1] * int(arr[i+1][tfood]['price'])
@@ -170,9 +177,49 @@ def orderFood(q, n, arr):
     #     }
     popup.mainloop()
 
-def payment():
-    Label()
-
+def payment(popup, choice):
+    if choice == 1:
+        infoCard = Toplevel(popup)
+        infoCard.geometry("350x180+550+250")
+        infoCard.title("Thông tin thanh toán")
+        
+        frame = Frame(infoCard,  width=350, height=180)
+        frame.pack()
+        Label(frame, text="Số thẻ: ", font=("Calibri (Body)", 15)).pack(side=LEFT, padx=20, pady=30)
+        stk = StringVar()
+        stkBox = Entry(frame, fg=a, bg="white", justify=CENTER, textvariable=stk, width=200)
+        stkBox.configure(font=("Tahoma", 15))
+        stkBox.pack(side=RIGHT, padx=20, pady=30)
+        
+        Button(infoCard, text="Xác nhận", relief=RAISED, font=("Calibri (Body)", 15), command=lambda: checkStk(popup, infoCard, stk.get())).pack()
+        
+        infoCard.mainloop()
+    else:
+        mbox.showinfo("Information", "Thanh toán thành công")
+        popup.destroy()
+        
+def checkStk(popup, infoCard, stk):
+    flag = 1
+    if len(stk) == 10:
+        for i in range(10):
+            if (stk[i] >= '0') and (stk[i] <= '9'):
+                continue
+            else:
+                flag = 0
+                break 
+    else:
+        flag = 0
+    
+    if flag == 0:
+        mbox.showerror("Error", "Số thẻ không hợp lệ")
+        infoCard.destroy()
+    else:
+        mbox.showinfo("Information", "Thanh toán thành công")
+        infoCard.destroy()
+        popup.destroy()
+        
+        
+    
 dec = []
 num = []
 inc = []
