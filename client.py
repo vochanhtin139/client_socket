@@ -113,8 +113,51 @@ def add_item(qq, i, item, pic):
     inc[i] = Button(frame, text='+', bd=2, fg=a, bg='white', relief=GROOVE, font=('Calibri (Body)', 16, 'bold'), pady=5, padx=8, command=lambda: increaseNum(i))
     inc[i].pack(side=LEFT)
 
+def sendData(n, arr, STK, timeOrder):
+    tmp = {
+            "type": "food_order"
+        }
+    jArr = []
+    jArr.append(tmp)
+    sum = 0
+    for i in range(n):
+        tfood = "food" + str(i + 1)
+        sum = sum + numOfFood[i+1] * int(arr[i+1][tfood]['price'])
+        js = {
+            tfood: {
+                "id": str(arr[i+1][tfood]['id']),
+                "num": str(numOfFood[i+1])
+            }
+        }
+        jArr.append(js)
+    
+    sck.sendall(str(len(json.dumps(jArr))).encode().ljust(64))
+    sck.sendall(json.dumps(jArr).encode())
+    
+    sck.sendall(str(len(str(sum))).encode().ljust(64))
+    sck.sendall(str(sum).encode())
+    
+    cash = sum
+    sck.sendall(str(len(str(cash))).encode().ljust(64))
+    sck.sendall(str(cash).encode())
+    
+    sck.sendall(str(len(STK)).encode().ljust(64))
+    sck.sendall(STK.encode())
+    
+    sck.sendall(str(len(str(timeOrder))).encode().ljust(64))
+    sck.sendall(str(timeOrder).encode())
+
 def orderFood(q, n, arr):
-    # e = datetime.datetime.now()
+    # Check no food:
+    flag = 1
+    for i in range(n):
+        if numOfFood[i+1] > 0:
+            flag = 0
+            break
+    if flag == 1:
+        return 
+    
+    timeOrder = datetime.datetime.now()
 
     # print ("Current date and time = %s" % e)
     # print ("Today's date:  = %s/%s/%s" % (e.day, e.month, e.year))
@@ -161,23 +204,11 @@ def orderFood(q, n, arr):
     cash.pack()
     card = Radiobutton(paymentFrame, text='Thanh toán bằng thẻ', font=('Calibri (Body)', 15), variable=choice, value=1)
     card.pack()
-    Button(paymentFrame, text="Thanh toán", font=('Calibri (Body)', 16), relief=RAISED, command=lambda: payment(popup, choice.get())).pack(pady=20)
+    Button(paymentFrame, text="Thanh toán", font=('Calibri (Body)', 16), relief=RAISED, command=lambda: payment(popup, choice.get(), n, arr, timeOrder)).pack(pady=20)
         
-    # for i in range(n):
-    #     tfood = "food" + str(i + 1)
-    #     total = numOfFood[i+1] * int(arr[i+1][tfood]['price'])
-    #     js = {
-    #         tfood: {
-    #             "id": arr[i+1][tfood]['id'],
-    #             "num": numOfFood[i+1],
-    #             "total": total,
-    #             "date": e.day + '/' + e.month + '/' + e.year,
-    #             "time": e.hour + '/' + e.minute + '/' + e.second
-    #         }
-    #     }
     popup.mainloop()
 
-def payment(popup, choice):
+def payment(popup, choice, n, arr, timeOrder):
     if choice == 1:
         infoCard = Toplevel(popup)
         infoCard.geometry("350x180+550+250")
@@ -191,14 +222,16 @@ def payment(popup, choice):
         stkBox.configure(font=("Tahoma", 15))
         stkBox.pack(side=RIGHT, padx=20, pady=30)
         
-        Button(infoCard, text="Xác nhận", relief=RAISED, font=("Calibri (Body)", 15), command=lambda: checkStk(popup, infoCard, stk.get())).pack()
+        Button(infoCard, text="Xác nhận", relief=RAISED, font=("Calibri (Body)", 15), command=lambda: checkStk(popup, infoCard, stk.get(), n, arr, timeOrder)).pack()
         
         infoCard.mainloop()
     else:
         mbox.showinfo("Information", "Thanh toán thành công")
+        STK = ""
+        sendData(n, arr, STK, timeOrder)
         popup.destroy()
         
-def checkStk(popup, infoCard, stk):
+def checkStk(popup, infoCard, stk, n, arr, timeOrder):
     flag = 1
     if len(stk) == 10:
         for i in range(10):
@@ -215,9 +248,9 @@ def checkStk(popup, infoCard, stk):
         infoCard.destroy()
     else:
         mbox.showinfo("Information", "Thanh toán thành công")
+        sendData(n, arr, stk, timeOrder)
         infoCard.destroy()
         popup.destroy()
-        
         
     
 dec = []
@@ -273,8 +306,8 @@ def add_food(q):
         tfood = "food" + str(i + 1)
         add_item(qq, i + 1, jArr[i + 1][tfood], imgRecv)
 
-    submit = Button(q, text="Đặt món", command=lambda: orderFood(q, n-1, jArr))
-    submit.pack()
+    submit = Button(q, text="Đặt món", font=('Calibri (Body)', 15, 'bold'), command=lambda: orderFood(q, n-1, jArr))
+    submit.pack(pady=10)
 
 def recvall(sock, count):
     buf = b''
