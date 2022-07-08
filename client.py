@@ -119,46 +119,43 @@ def orderFood(q, n, arr):
     # print ("The time is now: = %s:%s:%s" % (e.hour, e.minute, e.second))
     
     popup = Toplevel(q)
-    popup.geometry("400x600+700+700")
+    popup.geometry("500x600")
     # popup.title("Đơn hàng của bạn")
 
     set = Treeview(popup)
     set.pack()
 
     set['columns']= ('food_name', 'num', 'price', 'total')
-    set.column("food_name", width=100,  anchor=CENTER)
+    set.column("#0", width=0,  stretch=NO)
+    set.column("food_name", width=160,  anchor=CENTER)
     set.column("num",anchor=CENTER, width=80)
-    set.column("price",anchor=CENTER, width=80)
-    set.column("total",anchor=CENTER, width=80)
+    set.column("price",anchor=CENTER, width=120)
+    set.column("total",anchor=CENTER, width=120)
 
+    set.heading("#0",text="",anchor=CENTER)
     set.heading("food_name",text="Món",anchor=CENTER)
     set.heading("num",text="SL",anchor=CENTER)
     set.heading("price",text="Giá",anchor=CENTER)
     set.heading("total",text="Thành tiền",anchor=CENTER)
 
-    set.insert(parent='',index='end',iid=0,text='',
-    values=('Sữa chua','2','15000', '30000'))
-    set.insert(parent='',index='end',iid=1,text='',
-    values=('Súp nghêu','1','78000', '78000'))
-    set.insert(parent='',index='end',iid=2,text='',
-    values=('Mỳ cay','3','50000', '150000'))
+    sum = 0
+    for i in range(n):
+        if numOfFood[i+1] > 0:
+            tfood = "food" + str(i + 1)
+            total = numOfFood[i+1] * int(arr[i+1][tfood]['price'])
+            set.insert(parent='', index='end', iid=i, text='', values=(arr[i + 1][tfood]['food_name'], str(numOfFood[i + 1]), str(arr[i+1][tfood]['price']), str(total)))
+            sum = sum + total 
+        
+    Label(popup, text="Tổng: ", font=('Calibri (Body)', 20, 'bold')).pack(side=LEFT, padx=50)
+    Label(popup, text=str(sum), font=('Calibri (Body)', 20, 'bold')).pack(side=RIGHT, padx=50)
 
-    # tmp = {
-    #     "type": "food_menu"
-    # }
-    # jArr = []
-    # jArr.append(tmp)
-    # for i in range(n):
-    #     tfood = "food" + str(i + 1)
-    #     js = {
-    #         tfood: {
-    #             "id": arr[i+1][tfood]['id'],
-    #             "num": numOfFood[i+1]
-    #         }
-    #     }
-
+    var = IntVar()
+    Label(popup, text="Phương thức thanh toán:", font=('Calibri (Body)', 20, 'underline')).pack(side=BOTTOM, padx=50)
+    cash = Radiobutton(popup, text='Thanh toán tiền mặt', variable=var, value=0, command=payment)
+    cash.pack()
+    card = Radiobutton(popup, text='Chuyển khoản ngân hàng', variable=var, value=1, command=payment)
+    card.pack()
     
-
     # for i in range(n):
     #     tfood = "food" + str(i + 1)
     #     total = numOfFood[i+1] * int(arr[i+1][tfood]['price'])
@@ -172,6 +169,9 @@ def orderFood(q, n, arr):
     #         }
     #     }
     popup.mainloop()
+
+def payment():
+    Label()
 
 dec = []
 num = []
