@@ -11,6 +11,9 @@ from PIL import Image, ImageTk
 import sqlite3
 from io import BytesIO
 from PIL import ImageFile
+import time
+from datetime import datetime, timedelta
+import datetime
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 # *********************************** 
@@ -108,6 +111,68 @@ def add_item(qq, i, item, pic):
     inc[i] = Button(frame, text='+', bd=2, fg=a, bg='white', relief=GROOVE, font=('Calibri (Body)', 16, 'bold'), pady=5, padx=8, command=lambda: increaseNum(i))
     inc[i].pack(side=LEFT)
 
+def orderFood(q, n, arr):
+    # e = datetime.datetime.now()
+
+    # print ("Current date and time = %s" % e)
+    # print ("Today's date:  = %s/%s/%s" % (e.day, e.month, e.year))
+    # print ("The time is now: = %s:%s:%s" % (e.hour, e.minute, e.second))
+    
+    popup = Toplevel(q)
+    popup.geometry("400x600+700+700")
+    # popup.title("Đơn hàng của bạn")
+
+    set = Treeview(popup)
+    set.pack()
+
+    set['columns']= ('food_name', 'num', 'price', 'total')
+    set.column("food_name", width=100,  anchor=CENTER)
+    set.column("num",anchor=CENTER, width=80)
+    set.column("price",anchor=CENTER, width=80)
+    set.column("total",anchor=CENTER, width=80)
+
+    set.heading("food_name",text="Món",anchor=CENTER)
+    set.heading("num",text="SL",anchor=CENTER)
+    set.heading("price",text="Giá",anchor=CENTER)
+    set.heading("total",text="Thành tiền",anchor=CENTER)
+
+    set.insert(parent='',index='end',iid=0,text='',
+    values=('Sữa chua','2','15000', '30000'))
+    set.insert(parent='',index='end',iid=1,text='',
+    values=('Súp nghêu','1','78000', '78000'))
+    set.insert(parent='',index='end',iid=2,text='',
+    values=('Mỳ cay','3','50000', '150000'))
+
+    # tmp = {
+    #     "type": "food_menu"
+    # }
+    # jArr = []
+    # jArr.append(tmp)
+    # for i in range(n):
+    #     tfood = "food" + str(i + 1)
+    #     js = {
+    #         tfood: {
+    #             "id": arr[i+1][tfood]['id'],
+    #             "num": numOfFood[i+1]
+    #         }
+    #     }
+
+    
+
+    # for i in range(n):
+    #     tfood = "food" + str(i + 1)
+    #     total = numOfFood[i+1] * int(arr[i+1][tfood]['price'])
+    #     js = {
+    #         tfood: {
+    #             "id": arr[i+1][tfood]['id'],
+    #             "num": numOfFood[i+1],
+    #             "total": total,
+    #             "date": e.day + '/' + e.month + '/' + e.year,
+    #             "time": e.hour + '/' + e.minute + '/' + e.second
+    #         }
+    #     }
+    popup.mainloop()
+
 dec = []
 num = []
 inc = []
@@ -126,6 +191,8 @@ def add_food(q):
     # jData = sck.recv(int(length.decode()))
     jArr = json.loads(jData.decode())
     
+    n = len(jArr)
+
     for i in range(len(jArr)):
         numOfFood.append(0)
         dec.append(Label())
@@ -159,7 +226,7 @@ def add_food(q):
         tfood = "food" + str(i + 1)
         add_item(qq, i + 1, jArr[i + 1][tfood], imgRecv)
 
-    submit = Button(q, text="Đặt món")
+    submit = Button(q, text="Đặt món", command=lambda: orderFood(q, n-1, jArr))
     submit.pack()
 
 def recvall(sock, count):
@@ -194,7 +261,6 @@ def bar():
         # l4.place(x=18, y=210)
         l4.pack(side=LEFT, pady=(50, 0))
 
-        import time
         r = 0
         for i in range(100):
             progress['value'] = r
