@@ -128,7 +128,11 @@ def check2hours(nowTime, exTime):
     if (nowTime.year != exTime.year) or (nowTime.month != exTime.month) or (nowTime.day != exTime.day):
         return False 
     
-    nowSec = int(nowTime.hour) * 3600 + int(nowTime.minute) * 60 + float(nowTime.second)
+    if (nowTime.day - exTime.day == 1):
+        nowSec = int(nowTime.hour) * 3600 + int(nowTime.minute) * 60 + float(nowTime.second) + 24 * 3600
+    else:
+        nowSec = int(nowTime.hour) * 3600 + int(nowTime.minute) * 60 + float(nowTime.second)
+        
     exSec = int(exTime.hour) * 3600 + int(exTime.minute) * 60 + float(exTime.second)
     
     if nowSec - exSec <= 7200:
