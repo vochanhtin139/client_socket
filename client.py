@@ -131,8 +131,8 @@ def check2hours(nowTime, exTime):
     nowSec = int(nowTime.hour) * 3600 + int(nowTime.minute) * 60 + float(nowTime.second)
     exSec = int(exTime.hour) * 3600 + int(exTime.minute) * 60 + float(exTime.second)
     
-    # if nowSec - exSec <= 7200:
-    #     return True
+    if nowSec - exSec <= 7200:
+        return True
     return False
 
 def sendOrder(n, arr, ord_OR_upd):
@@ -216,6 +216,7 @@ def orderFood(q, n, arr, btn_Submit, ord_OR_upd):
     # Receive total
     sum_length = recvall(sck, 64).decode()
     sum = recvall(sck, int(sum_length)).decode()
+    global exSum, exChoice
     
     # print ("Current date and time = %s" % e)
     # print ("Today's date:  = %s/%s/%s" % (e.day, e.month, e.year))
@@ -247,21 +248,41 @@ def orderFood(q, n, arr, btn_Submit, ord_OR_upd):
             total = numOfFood[i+1] * int(arr[i+1][tfood]['price'])
             set.insert(parent='', index='end', iid=i, text='', values=(arr[i + 1][tfood]['food_name'], str(numOfFood[i + 1]), str(arr[i+1][tfood]['price']), str(total)))
         
-    sumFrame = Frame(popup, pady=50)
+    sumFrame = Frame(popup, pady=20)
     sumFrame.pack()
-    Label(sumFrame, text="Tổng: ", font=('Calibri (Body)', 18, 'bold')).pack(side=LEFT, padx=50)
-    Label(sumFrame, text=str(sum), font=('Calibri (Body)', 18, 'bold')).pack(side=RIGHT, padx=50)
+    if (ord_OR_upd == "order"):
+        Label(sumFrame, text="Tổng: ", font=('Calibri (Body)', 18, 'bold')).pack(side=LEFT, padx=50)
+        Label(sumFrame, text=str(sum), font=('Calibri (Body)', 18, 'bold')).pack(side=RIGHT, padx=50)
+    else:
+        Label(sumFrame, text="Tổng: ", font=('Calibri (Body)', 18, 'bold')).pack(side=LEFT, padx=50)
+        Label(sumFrame, text=str(sum), font=('Calibri (Body)', 18, 'bold')).pack(side=RIGHT, padx=50)
+        remainFrame = Frame(popup)
+        remainFrame.pack()
+        Label(remainFrame, text="Số tiền thanh toán thêm: ", font=('Calibri (Body)', 14, 'bold')).pack(side=LEFT, padx=20)
+        Label(remainFrame, text=str(int(sum) - int(exSum[0])), font=('Calibri (Body)', 14, 'bold')).pack(side=RIGHT, padx=20)
 # update payment
     paymentFrame = Frame(popup)
-    paymentFrame.pack()
+    paymentFrame.pack(pady=20)
     choice = IntVar()
     Label(paymentFrame, text="Phương thức thanh toán:", font=('Calibri (Body)', 16, 'underline')).pack()
-    cash = Radiobutton(paymentFrame, text='Thanh toán tiền mặt', font=('Calibri (Body)', 15), variable=choice, value=0)
-    cash.pack()
-    card = Radiobutton(paymentFrame, text='Thanh toán bằng thẻ', font=('Calibri (Body)', 15), variable=choice, value=1)
-    card.pack()
+    if (ord_OR_upd == "order"):
+        cash = Radiobutton(paymentFrame, text='Thanh toán tiền mặt', font=('Calibri (Body)', 15), variable=choice, value=0)
+        cash.pack()
+        card = Radiobutton(paymentFrame, text='Thanh toán bằng thẻ', font=('Calibri (Body)', 15), variable=choice, value=1)
+        card.pack()
+    else:
+        if (exChoice[0] == 0):
+            cash = Radiobutton(paymentFrame, text='Thanh toán tiền mặt', font=('Calibri (Body)', 15), variable=choice, value=0)
+            cash.pack()
+        else:
+            card = Radiobutton(paymentFrame, text='Thanh toán bằng thẻ', font=('Calibri (Body)', 15), variable=choice, value=1)
+            card.pack()
+            
     Button(paymentFrame, text="Thanh toán", font=('Calibri (Body)', 16), relief=RAISED, command=lambda: payment(q, popup, choice.get(), n, arr, sum, btn_Submit)).pack(pady=20)
         
+    exSum[0] = sum
+    exChoice[0] = choice.get()
+    
     popup.mainloop()
 
 def payment(q, popup, choice, n, arr, sum, btn_Submit):
@@ -309,6 +330,8 @@ inc = []
 numOfFood = []
 exNum = []
 exTimeOrder = []
+exSum = []
+exChoice = []
 
 # Add food to menu
 def add_food(q):
@@ -326,6 +349,8 @@ def add_food(q):
     n = len(jArr)
 
     exTimeOrder.append("")
+    exSum.append(0)
+    exChoice.append(0)
     for i in range(len(jArr)):
         numOfFood.append(0)
         exNum.append(0)
