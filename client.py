@@ -120,16 +120,19 @@ def sendData(n, arr, STK, timeOrder):
     jArr = []
     jArr.append(tmp)
     sum = 0
+    cnt = 1
     for i in range(n):
-        tfood = "food" + str(i + 1)
-        sum = sum + numOfFood[i+1] * int(arr[i+1][tfood]['price'])
-        js = {
-            tfood: {
-                "id": str(arr[i+1][tfood]['id']),
-                "num": str(numOfFood[i+1])
+        if numOfFood[i + 1] > 0:
+            tfood = "food" + str(cnt)
+            sum = sum + numOfFood[i+1] * int(arr[i+1]["food" + str(i + 1)]['price'])
+            js = {
+                tfood: {
+                    "id": str(arr[i+1]["food" + str(i + 1)]['id']),
+                    "num": str(numOfFood[i+1])
+                }
             }
-        }
-        jArr.append(js)
+            jArr.append(js)
+            cnt += 1
         
     order = "Order Food"
     sck.sendall(str(len(order)).encode().ljust(64))
@@ -146,7 +149,7 @@ def sendData(n, arr, STK, timeOrder):
     sck.sendall(str(cash).encode())
     
     sck.sendall(str(len(STK)).encode().ljust(64))
-    sck.sendall(STK.encode())
+    sck.sendall(str(STK).encode())
     
     sck.sendall(str(len(str(timeOrder))).encode().ljust(64))
     sck.sendall(str(timeOrder).encode())
