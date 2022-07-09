@@ -131,11 +131,20 @@ def check2hours(nowTime, exTime):
     nowSec = int(nowTime.hour) * 3600 + int(nowTime.minute) * 60 + float(nowTime.second)
     exSec = int(exTime.hour) * 3600 + int(exTime.minute) * 60 + float(exTime.second)
     
-    if nowSec - exSec <= 7200:
-        return True
+    # if nowSec - exSec <= 7200:
+    #     return True
     return False
 
 def sendOrder(n, arr, ord_OR_upd):
+    if ord_OR_upd == "order":
+        order = "Order Food"
+        sck.sendall(str(len(order)).encode().ljust(64))
+        sck.sendall(order.encode())
+    else:
+        update = "update Food"
+        sck.sendall(str(len(update)).encode().ljust(64))
+        sck.sendall(update.encode())
+        
     global exTimeOrder
     timeOrder = datetime.datetime.now()
     if ord_OR_upd == "update":
@@ -168,15 +177,6 @@ def sendOrder(n, arr, ord_OR_upd):
             }
             jArr.append(js)
             cnt += 1
-        
-    if ord_OR_upd == "order":
-        order = "Order Food"
-        sck.sendall(str(len(order)).encode().ljust(64))
-        sck.sendall(order.encode())
-    else:
-        update = "update Food"
-        sck.sendall(str(len(update)).encode().ljust(64))
-        sck.sendall(update.encode())
     
     # Send food order
     sck.sendall(str(len(json.dumps(jArr))).encode().ljust(64))
