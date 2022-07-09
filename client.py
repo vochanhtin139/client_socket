@@ -52,8 +52,11 @@ progress = Progressbar(w, style="red.Horizontal.TProgressbar", orient=HORIZONTAL
 def decreaseNum(i):
     global numOfFood
     global num
+    global exNum
     if numOfFood[i] == 0:
         return
+    if numOfFood[i] == exNum[i]:
+        return 
     numOfFood[i] = numOfFood[i] - 1
     num[i].config(text=str(numOfFood[i]))
 
@@ -113,48 +116,88 @@ def add_item(qq, i, item, pic):
     inc[i] = Button(frame, text='+', bd=2, fg=a, bg='white', relief=GROOVE, font=('Calibri (Body)', 16, 'bold'), pady=5, padx=8, command=lambda: increaseNum(i))
     inc[i].pack(side=LEFT)
 
-def sendData(n, arr, STK, timeOrder):
+def updateOrder(q, paymentMethod, n, arr, btn_Submit):
+    for i in range(n - 1):
+        exNum[i + 1] = numOfFood[i + 1]
+        
+    btn_Submit.config(text="Cập nhật", command=lambda: orderFood(q, n, arr, btn_Submit, "update")) 
+    # if paymentMethod == 1:
+        
+
+def check2hours(nowTime, exTime):
+    if (nowTime.year != exTime.year) or (nowTime.month != exTime.month) or (nowTime.day != exTime.day):
+        return False 
+    
+    nowSec = int(nowTime.hour) * 3600 + int(nowTime.minute) * 60 + float(nowTime.second)
+    exSec = int(exTime.hour) * 3600 + int(exTime.minute) * 60 + float(exTime.second)
+    
+    if nowSec - exSec <= 7200:
+        return True
+    return False
+
+def sendOrder(n, arr, ord_OR_upd):
+    global exTimeOrder
+    timeOrder = datetime.datetime.now()
+    if ord_OR_upd == "update":
+        if check2hours(timeOrder, exTimeOrder[0]) == False:
+            mbox.showerror("Error", "Quá thời hạn cập nhật đơn hàng")
+            sendStr = "false"
+            sck.sendall(str(len(sendStr)).encode().ljust(64))
+            sck.sendall(sendStr.encode())
+            return False
+        else:
+            sendStr = "true"
+            sck.sendall(str(len(sendStr)).encode().ljust(64))
+            sck.sendall(sendStr.encode())
+            
     tmp = {
             "type": "food_order"
         }
     jArr = []
     jArr.append(tmp)
-    sum = 0
     cnt = 1
     for i in range(n):
         if numOfFood[i + 1] > 0:
             tfood = "food" + str(cnt)
-            sum = sum + numOfFood[i+1] * int(arr[i+1]["food" + str(i + 1)]['price'])
             js = {
                 tfood: {
                     "id": str(arr[i+1]["food" + str(i + 1)]['id']),
-                    "num": str(numOfFood[i+1])
+                    "num": str(numOfFood[i+1]),
+                    "price": str(arr[i + 1]["food" + str(i + 1)]['price'])
                 }
             }
             jArr.append(js)
             cnt += 1
         
-    order = "Order Food"
-    sck.sendall(str(len(order)).encode().ljust(64))
-    sck.sendall(order.encode())
+    if ord_OR_upd == "order":
+        order = "Order Food"
+        sck.sendall(str(len(order)).encode().ljust(64))
+        sck.sendall(order.encode())
+    else:
+        update = "update Food"
+        sck.sendall(str(len(update)).encode().ljust(64))
+        sck.sendall(update.encode())
     
+    # Send food order
     sck.sendall(str(len(json.dumps(jArr))).encode().ljust(64))
     sck.sendall(json.dumps(jArr).encode())
     
-    sck.sendall(str(len(str(sum))).encode().ljust(64))
-    sck.sendall(str(sum).encode())
-    
-    cash = sum
-    sck.sendall(str(len(str(cash))).encode().ljust(64))
-    sck.sendall(str(cash).encode())
-    
-    sck.sendall(str(len(STK)).encode().ljust(64))
-    sck.sendall(str(STK).encode())
-    
+    # Send time order
     sck.sendall(str(len(str(timeOrder))).encode().ljust(64))
     sck.sendall(str(timeOrder).encode())
 
-def orderFood(q, n, arr):
+    exTimeOrder[0] = timeOrder
+    return True
+def sendPayment(cash, card):
+    # Send cash
+    sck.sendall(str(len(cash)).encode().ljust(64))
+    sck.sendall(str(cash).encode())
+    
+    # Send card
+    sck.sendall(str(len(card)).encode().ljust(64))
+    sck.sendall(str(card).encode())
+    
+def orderFood(q, n, arr, btn_Submit, ord_OR_upd):
     # Check no food:
     flag = 1
     for i in range(n):
@@ -164,8 +207,16 @@ def orderFood(q, n, arr):
     if flag == 1:
         return 
     
-    timeOrder = datetime.datetime.now()
-
+    # Send food order
+    sendSucc = sendOrder(n, arr, ord_OR_upd)
+    
+    if sendSucc == False:
+        return
+    
+    # Receive total
+    sum_length = recvall(sck, 64).decode()
+    sum = recvall(sck, int(sum_length)).decode()
+    
     # print ("Current date and time = %s" % e)
     # print ("Today's date:  = %s/%s/%s" % (e.day, e.month, e.year))
     # print ("The time is now: = %s:%s:%s" % (e.hour, e.minute, e.second))
@@ -190,19 +241,17 @@ def orderFood(q, n, arr):
     set.heading("price",text="Giá",anchor=CENTER)
     set.heading("total",text="Thành tiền",anchor=CENTER)
 
-    sum = 0
     for i in range(n):
         if numOfFood[i+1] > 0:
             tfood = "food" + str(i + 1)
             total = numOfFood[i+1] * int(arr[i+1][tfood]['price'])
             set.insert(parent='', index='end', iid=i, text='', values=(arr[i + 1][tfood]['food_name'], str(numOfFood[i + 1]), str(arr[i+1][tfood]['price']), str(total)))
-            sum = sum + total 
         
     sumFrame = Frame(popup, pady=50)
     sumFrame.pack()
     Label(sumFrame, text="Tổng: ", font=('Calibri (Body)', 18, 'bold')).pack(side=LEFT, padx=50)
     Label(sumFrame, text=str(sum), font=('Calibri (Body)', 18, 'bold')).pack(side=RIGHT, padx=50)
-
+# update payment
     paymentFrame = Frame(popup)
     paymentFrame.pack()
     choice = IntVar()
@@ -211,11 +260,11 @@ def orderFood(q, n, arr):
     cash.pack()
     card = Radiobutton(paymentFrame, text='Thanh toán bằng thẻ', font=('Calibri (Body)', 15), variable=choice, value=1)
     card.pack()
-    Button(paymentFrame, text="Thanh toán", font=('Calibri (Body)', 16), relief=RAISED, command=lambda: payment(popup, choice.get(), n, arr, timeOrder)).pack(pady=20)
+    Button(paymentFrame, text="Thanh toán", font=('Calibri (Body)', 16), relief=RAISED, command=lambda: payment(q, popup, choice.get(), n, arr, sum, btn_Submit)).pack(pady=20)
         
     popup.mainloop()
 
-def payment(popup, choice, n, arr, timeOrder):
+def payment(q, popup, choice, n, arr, sum, btn_Submit):
     if choice == 1:
         infoCard = Toplevel(popup)
         infoCard.geometry("350x180+550+250")
@@ -229,41 +278,37 @@ def payment(popup, choice, n, arr, timeOrder):
         stkBox.configure(font=("Tahoma", 15))
         stkBox.pack(side=RIGHT, padx=20, pady=30)
         
-        Button(infoCard, text="Xác nhận", relief=RAISED, font=("Calibri (Body)", 15), command=lambda: checkStk(popup, infoCard, stk.get(), n, arr, timeOrder)).pack()
+        Button(infoCard, text="Xác nhận", relief=RAISED, font=("Calibri (Body)", 15), command=lambda: checkStk(q, popup, infoCard, stk.get(), n, arr, sum, btn_Submit)).pack()
         
         infoCard.mainloop()
     else:
-        mbox.showinfo("Information", "Thanh toán thành công")
-        STK = ""
-        sendData(n, arr, STK, timeOrder)
+        mbox.showinfo("Information", "Đặt món thành công")
+        stk = ""
+        sendPayment(sum, stk)
         popup.destroy()
+        updateOrder(q, 0, n, arr, btn_Submit)
         
-def checkStk(popup, infoCard, stk, n, arr, timeOrder):
-    flag = 1
-    if len(stk) == 10:
-        for i in range(10):
-            if (stk[i] >= '0') and (stk[i] <= '9'):
-                continue
-            else:
-                flag = 0
-                break 
-    else:
-        flag = 0
+def checkStk(q, popup, infoCard, stk, n, arr, sum, btn_Submit):
+    sendPayment(sum, stk)
+    flag_length = recvall(sck, 64).decode()
+    flagRecv = recvall(sck, int(flag_length)).decode()
     
-    if flag == 0:
+    if flagRecv == '0':
         mbox.showerror("Error", "Số thẻ không hợp lệ")
         infoCard.destroy()
     else:
         mbox.showinfo("Information", "Thanh toán thành công")
-        sendData(n, arr, stk, timeOrder)
         infoCard.destroy()
         popup.destroy()
+        updateOrder(q, 1, n, arr, btn_Submit)
         
     
 dec = []
 num = []
 inc = []
 numOfFood = []
+exNum = []
+exTimeOrder = []
 
 # Add food to menu
 def add_food(q):
@@ -280,8 +325,10 @@ def add_food(q):
     
     n = len(jArr)
 
+    exTimeOrder.append("")
     for i in range(len(jArr)):
         numOfFood.append(0)
+        exNum.append(0)
         dec.append(Label())
         num.append(Label())
         inc.append(Label())
@@ -313,7 +360,7 @@ def add_food(q):
         tfood = "food" + str(i + 1)
         add_item(qq, i + 1, jArr[i + 1][tfood], imgRecv)
 
-    submit = Button(q, text="Đặt món", font=('Calibri (Body)', 15, 'bold'), command=lambda: orderFood(q, n-1, jArr))
+    submit = Button(q, text="Đặt món", font=('Calibri (Body)', 15, 'bold'), command=lambda: orderFood(q, n-1, jArr, submit, "order"))
     submit.pack(pady=10)
 
 def recvall(sock, count):
