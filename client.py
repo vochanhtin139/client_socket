@@ -145,7 +145,7 @@ def sendOrder(n, arr, ord_OR_upd):
         sck.sendall(str(len(order)).encode().ljust(64))
         sck.sendall(order.encode())
     else:
-        update = "update Food"
+        update = "Update Food"
         sck.sendall(str(len(update)).encode().ljust(64))
         sck.sendall(update.encode())
         
@@ -220,7 +220,7 @@ def orderFood(q, n, arr, btn_Submit, ord_OR_upd):
     # Receive total
     sum_length = recvall(sck, 64).decode()
     sum = recvall(sck, int(sum_length)).decode()
-    global exSum, exChoice
+    global exSum
     
     # print ("Current date and time = %s" % e)
     # print ("Today's date:  = %s/%s/%s" % (e.day, e.month, e.year))
@@ -285,11 +285,12 @@ def orderFood(q, n, arr, btn_Submit, ord_OR_upd):
     Button(paymentFrame, text="Thanh toán", font=('Calibri (Body)', 16), relief=RAISED, command=lambda: payment(q, popup, choice.get(), n, arr, sum, btn_Submit)).pack(pady=20)
         
     exSum[0] = sum
-    exChoice[0] = choice.get()
     
     popup.mainloop()
 
 def payment(q, popup, choice, n, arr, sum, btn_Submit):
+    global exChoice
+    exChoice[0] = choice
     if choice == 1:
         infoCard = Toplevel(popup)
         infoCard.geometry("350x180+550+250")
