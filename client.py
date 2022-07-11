@@ -35,14 +35,14 @@ w = Tk()
 w.title("")
 
 width_of_window = 854
-height_of_window = 500
+height_of_window = 550
 screen_width = w.winfo_screenwidth()
 screen_height = w.winfo_screenheight()
 x_coordinate = (screen_width / 2) - (width_of_window / 2)
 y_coordinate = (screen_height / 2) - (height_of_window / 2)
 w.geometry("%dx%d+%d+%d" % (width_of_window, height_of_window, x_coordinate, y_coordinate))
 
-# w.overrideredirect(1)
+w.overrideredirect(1)
 
 s = Style()
 s.theme_use('clam')
@@ -227,7 +227,7 @@ def orderFood(q, n, arr, btn_Submit, ord_OR_upd):
     # print ("The time is now: = %s:%s:%s" % (e.hour, e.minute, e.second))
     
     popup = Toplevel(q)
-    popup.geometry("500x600+500+120")
+    popup.geometry("500x550+500+120")
     popup.title("Đơn hàng của bạn")
 
     set = Treeview(popup)
@@ -266,9 +266,9 @@ def orderFood(q, n, arr, btn_Submit, ord_OR_upd):
         Label(remainFrame, text=str(int(sum) - int(exSum[0])), font=('Calibri (Body)', 14, 'bold')).pack(side=RIGHT, padx=20)
 # update payment
     paymentFrame = Frame(popup)
-    paymentFrame.pack(pady=20)
+    paymentFrame.pack(pady=20, fill=BOTH)
     choice = IntVar()
-    Label(paymentFrame, text="Phương thức thanh toán:", font=('Calibri (Body)', 16, 'underline')).pack()
+    Label(paymentFrame, text="Phương thức thanh toán:", font=('Calibri (Body)', 16, 'underline')).pack(anchor=W, padx=20)
     if (ord_OR_upd == "order"):
         cash = Radiobutton(paymentFrame, text='Thanh toán tiền mặt', font=('Calibri (Body)', 15), variable=choice, value=0)
         cash.pack()
@@ -339,9 +339,12 @@ exSum = []
 exChoice = []
 
 # Add food to menu
-def add_food(q):
+def add_food(q, tID):
     h1 = Label(q, text='Client Menu', fg='pink', bg=a, font=('Forte', 35), pady=12)
     h1.pack(fill=BOTH)
+
+    h2 = Label(q, text="ID bàn: " + tID, fg='white', bg=a, font=('Tahoma', 12, "bold"))
+    h2.pack(pady=(0, 5))
 
     sendStr = "Received"
 
@@ -403,13 +406,13 @@ def recvall(sock, count):
     return buf
 
 # New window after splash screen
-def new_win():
+def new_win(tID):
     q = Tk()
-    q.title("")
+    q.title("Client menu")
     q.geometry("%dx%d+%d+%d" % (width_of_window, height_of_window, x_coordinate, y_coordinate))
-    Frame(q, width=857, height=482, bg=a).place(x=0, y=0)
+    Frame(q, width=857, height=532, bg=a).place(x=0, y=0)
 
-    add_food(q)
+    add_food(q, tID)
 
     q.mainloop()
 
@@ -433,31 +436,31 @@ def bar():
             r = r + 1
 
         w.destroy()
-        new_win()
+        new_win(tmp)
 
 progress.pack(side=BOTTOM)
 
 # Adding widget at splash screen
 a = '#249794'
-Frame(w, width=857, height=482, bg = a).place(x=0, y=0)
+Frame(w, width=857, height=532, bg = a).place(x=0, y=0)
 
 l1 = Label(w, text='CLIENT MENU', fg = 'white', bg=a, anchor=W)
 lst1 = ('Courier New', 50, 'bold italic')
 l1.config(font=lst1)
 l1.pack(fill=BOTH, padx=100, pady=(50, 0))
 
-l2 = Label(w, text="Group 08", fg="white", bg=a, anchor=W)
+l2 = Label(w, text="NHÓM 08", fg="white", bg=a, anchor=W)
 lst2 = ('Tahoma', 28)
 l2.config(font=lst2)
 # l2.place(x=90, y=110)
 l2.pack(fill=BOTH, padx=100)
 
-l3 = Label(w, text="Vo Chanh Tin\nPhan Nhu Quynh\nNguyen Van Dang Huynh", foreground="white", background=a, justify=LEFT, anchor=W)
+l3 = Label(w, text="Võ Chánh Tín\nPhan Như Quỳnh\nNguyễn Văn Đăng Huỳnh", foreground="white", background=a, justify=LEFT, anchor=W)
 lst3 = ('Tahoma', 14)
 l3.config(font=lst3)
 l3.pack(fill=BOTH, padx=100, pady=10)
 
-l4 = Label(w, text="Enter table ID:", bg=a, fg="white")
+l4 = Label(w, text="Nhập table ID:", bg=a, fg="white")
 l4.pack(pady=(10, 0))
 
 value = StringVar()
@@ -466,6 +469,6 @@ inputPort.configure(font=("Tahoma", 20))
 # inputPort.bind('<Return>', bar)
 inputPort.pack()
 
-b1 = Button(w, width=20, height=2, text="Get started", command=lambda: bar(), border=1, fg=a, bg="white", anchor=CENTER)
+b1 = Button(w, width=20, height=2, text="Bắt đầu", command=lambda: bar(), border=1, fg=a, bg="white", anchor=CENTER)
 b1.pack(pady=50)
 w.mainloop()
