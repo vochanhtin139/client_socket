@@ -121,8 +121,6 @@ def updateOrder(q, paymentMethod, n, arr, btn_Submit):
         exNum[i + 1] = numOfFood[i + 1]
         
     btn_Submit.config(text="Cập nhật", command=lambda: orderFood(q, n, arr, btn_Submit, "update")) 
-    # if paymentMethod == 1:
-        
 
 def check2hours(nowTime, exTime):
     if (nowTime.year != exTime.year) or (nowTime.month != exTime.month) or (nowTime.day != exTime.day):
@@ -284,7 +282,7 @@ def orderFood(q, n, arr, btn_Submit, ord_OR_upd):
             
     Button(paymentFrame, text="Thanh toán", font=('Calibri (Body)', 16), relief=RAISED, command=lambda: payment(q, popup, choice.get(), n, arr, sum, btn_Submit)).pack(pady=20)
         
-    exSum[0] = sum
+    # exSum[0] = int(sum) 
     
     popup.mainloop()
 
@@ -314,6 +312,9 @@ def payment(q, popup, choice, n, arr, sum, btn_Submit):
         popup.destroy()
         updateOrder(q, 0, n, arr, btn_Submit)
         
+        global exSum
+        exSum[0] = int(sum) 
+        
 def checkStk(q, popup, infoCard, stk, n, arr, sum, btn_Submit):
     sendPayment(sum, stk)
     flag_length = recvall(sck, 64).decode()
@@ -327,6 +328,8 @@ def checkStk(q, popup, infoCard, stk, n, arr, sum, btn_Submit):
         infoCard.destroy()
         popup.destroy()
         updateOrder(q, 1, n, arr, btn_Submit)
+        global exSum
+        exSum[0] = int(sum) 
         
     
 dec = []
