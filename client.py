@@ -271,10 +271,16 @@ def orderFood(q, n, arr, btn_Submit, ord_OR_upd):
             card.pack()
             
     Button(paymentFrame, text="Thanh toán", font=('Calibri (Body)', 16), relief=RAISED, command=lambda: payment(q, popup, choice.get(), n, arr, sum, btn_Submit)).pack(pady=20)
-        
-    # exSum[0] = int(sum) 
     
+    popup.protocol("WM_DELETE_WINDOW", lambda: on_closing(popup))
     popup.mainloop()
+
+def on_closing(popup):
+    if mbox.askokcancel("Quit", "Bạn có muốn thoát không?"):
+        quit = "Quit"
+        sck.sendall(str(len(quit)).encode().ljust(64))
+        sck.sendall(str(quit).encode())
+        popup.destroy()
 
 def payment(q, popup, choice, n, arr, sum, btn_Submit):
     global exChoice
