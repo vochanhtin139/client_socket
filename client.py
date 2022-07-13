@@ -123,17 +123,7 @@ def updateOrder(q, paymentMethod, n, arr, btn_Submit):
     btn_Submit.config(text="Cập nhật", command=lambda: orderFood(q, n, arr, btn_Submit, "update")) 
 
 def check2hours(nowTime, exTime):
-    if (nowTime.year != exTime.year) or (nowTime.month != exTime.month) or (nowTime.day != exTime.day):
-        return False 
-    
-    if (nowTime.day - exTime.day == 1):
-        nowSec = int(nowTime.hour) * 3600 + int(nowTime.minute) * 60 + float(nowTime.second) + 24 * 3600
-    else:
-        nowSec = int(nowTime.hour) * 3600 + int(nowTime.minute) * 60 + float(nowTime.second)
-        
-    exSec = int(exTime.hour) * 3600 + int(exTime.minute) * 60 + float(exTime.second)
-    
-    if nowSec - exSec <= 7200:
+    if (nowTime - exTime).seconds <= 7200:
         return True
     return False
 
